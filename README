@@ -19,6 +19,9 @@ Remember to chown your $MINE_PATH folder to the user you choose, e.g.,
 $ sudo chown -R bob. /world9 # where $MINECRAFT_USER is bob and $MINE_PATH is
 /world9.
 
+Make sure to place the minecraft_server.jar file into your $MINE_PATH as this
+is where the script assumes it to be.
+
 Usage:
 
 minecraft [start|stop|status|restart]
