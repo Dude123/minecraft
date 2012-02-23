@@ -1,0 +1,105 @@
+#!/bin/bash
+
+### ADD ERROR HANDLING ###
+### To connect to the minecraft tmux session do: sudo -u nobody tmux a -t 0 ###
+### USE /lib/lsb/init-functions TO DISPLAY "Starting Minecraft server... [fail]" MESSAGE WHEN start_minecraft() FAILS (e.g., minecraft is already running, thus logically the start_minecraft() should fail)
+### MAKE SURE TO REDIRECT ERRORS TO STDERR
+### CREATE A COLORIZE FUNCTION WITH THE FOLLOWING USAGE: colorize_heredoc_text("string of $TEXT") --color red
+
+PATH=/sbin:/bin:/usr/bin/:/usr/local/bin
+# Please set the following variables and test this script before you install it.
+MINECRAFT_USER=nobody
+MINE_PATH=/home/nate/world9
+
+. /lib/lsb/init-functions
+
+if [ -e "`which tmux`" ]; then
+	TERM_MULTIPLEXER=tmux
+	SESSION_INFO_CMD=`sudo -u $MINECRAFT_USER tmux list-sessions 2>&1`
+	GET_SESSION="tmux list-sessions"
+	CONNECT_CMD="tmux a -t ${SESSION_INFO_CMD::1}"
+	START_SESSION_CMD="tmux new-session -d -n minecraft"
+	START_MINECRAFT_CMD="java -Xms1024M -Xmx1024M -jar minecraft_server.jar nogui"
+	SENDKEYS_CMD="tmux send-keys -t minecraft `printf 'stop\r'`"
+	DETACH_KEYS="Ctrl-b d"
+else
+	if [ -e "`which screen`" ]; then
+		TERM_MULTIPLEXER=screen
+		GET_SESSION="screen -ls"
+		CONNECT_CMD="screen -r minecraft"
+		START_SESSION_CMD="screen -dmS minecraft"
+		START_MINECRAFT_CMD="java -Xms1024M -Xmx1024M -jar minecraft_server.jar nogui"
+		SENDKEYS_CMD="screen -p 0 -X stuff `printf 'stop\r'`"
+		DETACH_KEYS="Ctrl-a Ctrl-b"
+		CHOWN_PTS_HACK="chown $MINECRAFT_USER /dev/pts/0"
+	fi
+fi
+
+start_minecraft()
+{
+	if [ $TERM_MULTIPLEXER = "tmux" ]; then
+		cd $MINE_PATH && sudo -u $MINECRAFT_USER $START_SESSION_CMD "$START_MINECRAFT_CMD"
+	else
+		if [ $TERM_MULTIPLEXER = "screen" ]; then
+			cd $MINE_PATH && sudo -u $MINECRAFT_USER $START_SESSION_CMD $START_MINECRAFT_CMD
+		fi
+	fi
+}
+stop_minecraft()
+{
+	sudo -u $MINECRAFT_USER $SENDKEYS_CMD
+}
+status_minecraft()
+{
+	# THIS IS A HACK!! I am not sure what the following does with regards to system security/stability!!
+	$CHOWN_PTS_HACK
+	###############
+	ps auxww | grep -iEq "$TERM_MULTIPLEXER.*[m]inecraft"
+	EXITVAL=$?
+	SESSION_INFO=`sudo -u $MINECRAFT_USER $GET_SESSION 2>&1`
+	return $EXITVAL
+}
+
+case "$1" in
+  start)
+	log_begin_msg "Starting Minecraft server..."
+	status_minecraft && echo -n "ERROR: Minecraft already appears to be running." || start_minecraft
+	log_end_msg 0
+	;;
+  stop)
+	log_begin_msg "Stopping Minecraft server..."
+	stop_minecraft
+	log_end_msg 0
+	;;
+  status)
+	status_minecraft
+	if [ -e $MINE_PATH/server.log.lck ] && [ "$EXITVAL" -eq "0" ]; then
+		cat <<- -EOF-
+		Minecraft appears to be running...
+
+		`echo -e "\033[22;32m"`*`tput sgr0`$TERM_MULTIPLEXER session info: `echo -e "\033[22;32m"`$SESSION_INFO`tput sgr0`
+		`echo -e "\033[22;32m"`*`tput sgr0`To connect to the $TERM_MULTIPLEXER(1) session and administrate the minecraft server, do the following: `echo -e "\033[22;33m"`sudo -u $MINECRAFT_USER $CONNECT_CMD`tput sgr0`
+		`echo -e "\033[22;32m"`*`tput sgr0`When finished, detach from the session with the following keystrokes: `echo -e "\033[22;34m"`$DETACH_KEYS`tput sgr0`.
+		-EOF-
+		exit 0
+	else
+		cat <<- -EOF-
+		Minecraft does not appear to be running...
+
+		`echo -e "\033[22;31m"`*`tput sgr0`$TERM_MULTIPLEXER session information: `echo -e "\033[22;31m"`$SESSION_INFO`tput sgr0`
+		-EOF-
+		exit 1
+	fi
+	;;
+  restart)
+	log_begin_msg "Restarting Minecraft server..."
+	stop_minecraft
+	sleep 2
+	start_minecraft
+	log_end_msg 0
+	;;
+  *)
+	echo "Usage: $0 start|stop|status|restart" >&2
+	exit 3
+	;;
+esac
