@@ -1,0 +1,35 @@
+This is a start up script for minecraft_server.jar server.
+
+Let's say you want to host your own minecraft server on an Ubuntu box, well it
+sucks to log in and start/stop the server manually.  On top of that you have to
+run the thing in a terminal multiplexer like gnu screen or tmux for it to keep
+running after you log out of the server.
+
+This script attempts to do all that for you and as gracefully as it can manage.
+It starts the minecraft_server.jar in a tmux/screen session & then when the
+server is told to stop it sends the Minecraft server 'stop' command to the
+associated tmux/screen session.
+
+Basically you place this script into your /etc/init.d/ folder in Ubuntu, then
+modify the script to change the $MINECRAFT_USER & $MINE_PATH variables to what
+you desire (Warning! Do not use root as the $MINECRAFT_USER as this would be
+dangerous to your Ubuntu machine's security).
+
+Remember to chown your $MINE_PATH folder to the user you choose, e.g.,
+$ sudo chown -R bob. /world9 # where $MINECRAFT_USER is bob and $MINE_PATH is
+/world9.
+
+Usage:
+
+minecraft [start|stop|status|restart]
+
+start   Starts the minecraft server in a tmux/screen session.
+stop    Sends the minecraft 'stop' command to the tmux/screen session.
+status  Prints out whether minecraft server is running and how to connect to the
+	associated tmux/screen session.
+restart Basically runs the stop function & then the start function.
+
+Once you have set the required variables... To get this script to run
+automatically on start up and stop gracefully at reboot/halt do the following:
+
+$ sudo update-rc.d minecraft defaults
