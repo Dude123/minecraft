@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# Put this script in your /etc/init.d folder and install it with the following command: sudo update-rc.d minecraft defaults
 ### ADD ERROR HANDLING ###
 ### To connect to the minecraft tmux session do: sudo -u nobody tmux a -t 0 ###
 ### USE /lib/lsb/init-functions TO DISPLAY "Starting Minecraft server... [fail]" MESSAGE WHEN start_minecraft() FAILS (e.g., minecraft is already running, thus logically the start_minecraft() should fail)
