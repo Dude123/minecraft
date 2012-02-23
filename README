@@ -33,3 +33,21 @@ Once you have set the required variables... To get this script to run
 automatically on start up and stop gracefully at reboot/halt do the following:
 
 $ sudo update-rc.d minecraft defaults
+
+Remember!  To administrate your Minecraft server you will need to find out how
+to connect to it's associated tmux/screen session, to do that run:
+
+$ sudo /etc/init.d/minecraft status
+Minecraft appears to be running...
+
+*tmux session info: 0: 1 windows (created Thu Feb  9 20:19:35 2012) [80x23]
+*To connect to the tmux(1) session and administrate the minecraft server, do the
+following: sudo -u nobody tmux a -t 0
+*When finished, detach from the session with the following keystrokes: Ctrl-b d.
+
+
+
+If you noticed the status command prints out how to connect to the minecraft
+server session:
+
+'sudo -u nobody tmux a -t 0'
