@@ -38,7 +38,7 @@ automatically on start up and stop gracefully at reboot/halt do the following:
 $ sudo update-rc.d minecraft defaults
 
 Remember!  To administrate your Minecraft server you will need to find out how
-to connect to it's associated tmux/screen session, to do that run:
+to connect to its associated tmux/screen session, to do that run:
 
 $ sudo /etc/init.d/minecraft status
 Minecraft appears to be running...
