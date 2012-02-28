@@ -1,8 +1,19 @@
 #!/bin/bash
 
-# Put this script in your /etc/init.d folder and install it with the following command: sudo update-rc.d minecraft defaults
+### BEGIN INIT INFO
+# Provides:   minecraft
+# Required-Start: $local_fs $remote_fs
+# Required-Stop:  $local_fs $remote_fs
+# Should-Start:   $network
+# Should-Stop:    $network
+# Default-Start:  2 3 4 5
+# Default-Stop:   0 1 6
+# Short-Description:    Minecraft init script
+# Description:		This is a start up script for minecraft_server.jar server.
+### END INIT INFO
+
+### LSBise: http://wiki.debian.org/LSBInitScripts
 ### ADD ERROR HANDLING ###
-### To connect to the minecraft tmux session do: sudo -u nobody tmux a -t 0 ###
 ### USE /lib/lsb/init-functions TO DISPLAY "Starting Minecraft server... [fail]" MESSAGE WHEN start_minecraft() FAILS (e.g., minecraft is already running, thus logically the start_minecraft() should fail)
 ### MAKE SURE TO REDIRECT ERRORS TO STDERR
 ### CREATE A COLORIZE FUNCTION WITH THE FOLLOWING USAGE: colorize_heredoc_text("string of $TEXT") --color red
